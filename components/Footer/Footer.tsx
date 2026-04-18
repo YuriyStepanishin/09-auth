@@ -7,7 +7,7 @@ export default function Footer() {
         <p>© {new Date().getFullYear()} NoteHub. All rights reserved.</p>
 
         <div className={css.wrap}>
-          <p>Developer: Goga</p>
+          <p>Developer: Yuriy Stepanishin</p>
 
           <p>
             Contact us:

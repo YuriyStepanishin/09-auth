@@ -1,5 +1,9 @@
-import { QueryClient, dehydrate, HydrationBoundary } from "@tanstack/react-query";
-import { fetchNoteById } from "@/lib/api";
+import {
+  QueryClient,
+  dehydrate,
+  HydrationBoundary,
+} from "@tanstack/react-query";
+import { fetchNoteById } from "@/lib/api/serverApi";
 import NotePreview from "./NotePreview.client";
 
 export default async function NoteModal({

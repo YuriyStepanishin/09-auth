@@ -1,7 +1,8 @@
 import type { Metadata } from "next";
-import { getCategories } from "@/lib/api";
 import NoteForm from "@/components/NoteForm/NoteForm";
 import css from "./CreateNote.module.css";
+
+const categories = ["Todo", "Work", "Personal", "Meeting", "Shopping"];
 
 export const metadata: Metadata = {
   title: "Create note",
@@ -22,9 +23,7 @@ export const metadata: Metadata = {
   },
 };
 
-const CreateNote = async () => {
-  const categories = await getCategories();
-
+const CreateNote = () => {
   return (
     <main className={css.main}>
       <div className={css.container}>

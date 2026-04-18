@@ -1,5 +1,5 @@
 import { Metadata } from "next";
-import { getSingleNote } from "@/lib/api";
+import { fetchNoteById } from "@/lib/api/serverApi";
 
 type Props = {
   params: Promise<{ id: string }>;
@@ -7,7 +7,7 @@ type Props = {
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { id } = await params;
-  const note = await getSingleNote(id);
+  const note = await fetchNoteById(id);
 
   return {
     title: note.title,
@@ -30,7 +30,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 export default async function NotePage({ params }: Props) {
   const { id } = await params;
 
-  const note = await getSingleNote(id);
+  const note = await fetchNoteById(id);
 
   return <div>{note.title}</div>;
 }
