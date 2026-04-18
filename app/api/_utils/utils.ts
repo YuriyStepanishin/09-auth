@@ -1,28 +1,9 @@
-import type { AxiosError } from "axios";
-import type { NextResponse } from "next/server";
-
 export function logErrorResponse(errorObj: unknown): void {
-  console.log("API error response:");
+  const green = "\x1b[32m";
+  const yellow = "\x1b[33m";
+  const reset = "\x1b[0m";
+
+  // Arrow is green, text is yellow.
+  console.log(`${green}> ${yellow}Error Response Data:${reset}`);
   console.dir(errorObj, { depth: null, colors: true });
-}
-
-export function getAxiosErrorStatus(error: AxiosError): number {
-  return error.response?.status ?? 500;
-}
-
-export function appendSetCookieHeaders(
-  response: NextResponse,
-  setCookieHeader: string | string[] | undefined,
-): void {
-  if (!setCookieHeader) {
-    return;
-  }
-
-  const cookieList = Array.isArray(setCookieHeader)
-    ? setCookieHeader
-    : [setCookieHeader];
-
-  for (const cookie of cookieList) {
-    response.headers.append("set-cookie", cookie);
-  }
 }

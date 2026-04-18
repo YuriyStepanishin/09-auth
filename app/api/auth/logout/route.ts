@@ -2,42 +2,36 @@ import { NextResponse } from "next/server";
 import { api } from "../../api";
 import { cookies } from "next/headers";
 import { isAxiosError } from "axios";
-import {
-  appendSetCookieHeaders,
-  getAxiosErrorStatus,
-  logErrorResponse,
-} from "../../_utils/utils";
+import { logErrorResponse } from "../../_utils/utils";
 
 export async function POST() {
-  const cookieStore = await cookies();
-
   try {
-    const apiRes = await api.post("auth/logout", null, {
+    const cookieStore = await cookies();
+
+    const accessToken = cookieStore.get("accessToken")?.value;
+    const refreshToken = cookieStore.get("refreshToken")?.value;
+
+    await api.post("auth/logout", null, {
       headers: {
-        Cookie: cookieStore.toString(),
+        Cookie: `accessToken=${accessToken}; refreshToken=${refreshToken}`,
       },
     });
 
-    const response = NextResponse.json(null, { status: apiRes.status });
-    appendSetCookieHeaders(response, apiRes.headers["set-cookie"]);
-    response.cookies.set("accessToken", "", { maxAge: 0, path: "/" });
-    response.cookies.set("refreshToken", "", { maxAge: 0, path: "/" });
+    cookieStore.delete("accessToken");
+    cookieStore.delete("refreshToken");
 
-    return response;
+    return NextResponse.json(
+      { message: "Logged out successfully" },
+      { status: 200 },
+    );
   } catch (error) {
     if (isAxiosError(error)) {
       logErrorResponse(error.response?.data);
 
-      const status = getAxiosErrorStatus(error);
-
-      if (status === 401 || status === 403) {
-        const response = NextResponse.json(null, { status: 200 });
-        response.cookies.set("accessToken", "", { maxAge: 0, path: "/" });
-        response.cookies.set("refreshToken", "", { maxAge: 0, path: "/" });
-        return response;
-      }
-
-      return NextResponse.json({ error: error.message }, { status });
+      return NextResponse.json(
+        { error: error.message, response: error.response?.data },
+        { status: error.status },
+      );
     }
 
     logErrorResponse({ message: (error as Error).message });

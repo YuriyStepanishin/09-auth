@@ -71,8 +71,13 @@ export const logout = async (): Promise<void> => {
 };
 
 export const checkSession = async (): Promise<User | null> => {
-  const res = await nextServer.get<User | null>("/auth/session");
-  return res.data || null;
+  const res = await nextServer.get<{ success: boolean }>("/auth/session");
+
+  if (!res.data?.success) {
+    return null;
+  }
+
+  return getMe();
 };
 
 export const getMe = async (): Promise<User> => {

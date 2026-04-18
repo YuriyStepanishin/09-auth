@@ -1,25 +1,64 @@
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
+import { cookies } from "next/headers";
+import { checkSession } from "./lib/api/serverApi";
 
-export function proxy(request: NextRequest) {
+function appendSetCookieHeaders(
+  response: NextResponse,
+  setCookieHeader: string | string[] | undefined,
+): void {
+  if (!setCookieHeader) {
+    return;
+  }
+
+  const cookieList = Array.isArray(setCookieHeader)
+    ? setCookieHeader
+    : [setCookieHeader];
+
+  for (const cookie of cookieList) {
+    response.headers.append("set-cookie", cookie);
+  }
+}
+
+export async function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl;
+  const cookieStore = await cookies();
 
-  const token = request.cookies.get("accessToken")?.value;
+  const accessToken = cookieStore.get("accessToken")?.value;
+  const refreshToken = cookieStore.get("refreshToken")?.value;
+  let isAuthenticated = Boolean(accessToken);
+  let refreshedSetCookie: string | string[] | undefined;
+
+  if (!isAuthenticated && refreshToken) {
+    try {
+      const sessionRes = await checkSession();
+      refreshedSetCookie = sessionRes.headers["set-cookie"];
+      isAuthenticated = Boolean(sessionRes.data?.success);
+    } catch {
+      isAuthenticated = false;
+    }
+  }
 
   const isAuthRoute =
     pathname.startsWith("/sign-in") || pathname.startsWith("/sign-up");
   const isPrivateRoute =
     pathname.startsWith("/profile") || pathname.startsWith("/notes");
 
-  if (!token && isPrivateRoute) {
-    return NextResponse.redirect(new URL("/sign-in", request.url));
+  if (!isAuthenticated && isPrivateRoute) {
+    const response = NextResponse.redirect(new URL("/sign-in", request.url));
+    appendSetCookieHeaders(response, refreshedSetCookie);
+    return response;
   }
 
-  if (token && isAuthRoute) {
-    return NextResponse.redirect(new URL("/profile", request.url));
+  if (isAuthenticated && isAuthRoute) {
+    const response = NextResponse.redirect(new URL("/profile", request.url));
+    appendSetCookieHeaders(response, refreshedSetCookie);
+    return response;
   }
 
-  return NextResponse.next();
+  const response = NextResponse.next();
+  appendSetCookieHeaders(response, refreshedSetCookie);
+  return response;
 }
 
 export const config = {
