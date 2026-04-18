@@ -1,1 +1,5 @@
-export { default } from "@/app/(private routes)/@modal/(.)notes/[id]/error";
+"use client";
+
+export default function Error({ error }: { error: Error }) {
+  return <p>Could not fetch note details. {error.message}</p>;
+}

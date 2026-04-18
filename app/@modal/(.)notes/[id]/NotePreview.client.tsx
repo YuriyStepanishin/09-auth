@@ -1,5 +1,4 @@
-export { default } from "@/app/(private routes)/@modal/(.)notes/[id]/NotePreview.client";
-("use client");
+"use client";
 
 import { useQuery } from "@tanstack/react-query";
 import { fetchNoteById } from "@/lib/api/clientApi";
